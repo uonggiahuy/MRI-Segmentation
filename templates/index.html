@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chẩn đoán u não bằng MRI</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+  <style>
+    /* Viền xanh ba phía + font Roboto */
+    body {
+      margin: 0;
+      padding: 0;
+      border-left: 8px solid #4CB1F7;
+      border-right: 8px solid #4CB1F7;
+      border-top: 8px solid #4CB1F7;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: #f0f8ff;
+    }
+
+    /* Thanh menu ngang trên cùng */
+    .top-bar {
+      background-color: #42A5F5;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 14px;
+      color: white;
+    }
+    .top-bar .left, .top-bar .right {
+      display: flex;
+      align-items: center;
+    }
+    .top-bar .left div, .top-bar .right div {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .top-bar .right .search-icon {
+      margin-left: 8px;
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Thanh menu logo + các mục chính */
+    .navbar {
+      background-color: #1A237E;
+      display: flex;
+      align-items: center;
+      color: white;
+    }
+    .navbar img.logo {
+      height: 64px;
+      margin: 0 20px;
+    }
+    .navbar .menu {
+      display: flex;
+      flex: 1;
+    }
+    .navbar .menu div {
+      padding: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      flex-grow: 1;
+    }
+    .navbar .menu div:hover {
+      background-color: #283593;
+    }
+
+    /* Banner vàng */
+    .banner {
+      background: #f5f5f5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .banner .left, .banner .right {
+      display: flex;
+      align-items: center;
+    }
+    .banner img {
+      width: 32px;
+      height: 32px;
+      margin-right: 8px;
+    }
+    .banner .left span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .banner .right img {
+      margin-right: 4px;
+    }
+    .banner .right span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* Nội dung chính */
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    h1 {
+      color: #007ACC;
+    }
+    .upload-area {
+      margin-top: 20px;
+      border: 2px dashed #007ACC;
+      padding: 20px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+    .upload-area:hover {
+      background-color: #e0f7ff;
+      cursor: pointer;
+    }
+    .upload-area input {
+      margin-bottom: 10px;
+    }
+    .upload-area p {
+      margin: 10px 0;
+      font-size: 14px;
+      color: #333;
+    }
+    #preview img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    .result-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .result-container .image-box {
+      width: 48%;
+    }
+    .result-container .image-box img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #008000;
+      font-weight: bold;
+    }
+    .loading {
+      display: none;
+      margin: 20px auto;
+    }
+    .loading img {
+      width: 50px;
+      height: 50px;
+    }
+    .btn-submit {
+      background-color: #007ACC;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .btn-submit:hover {
+      background-color: #005a9c;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh menu ngang trên cùng -->
+  <div class="top-bar">
+    <div class="left">
+      <div>ĐHQGHN</div>
+      <div>Email</div>
+      <div>E-Office</div>
+      <div>Chuyên san CNTT &amp; TT</div>
+      <div>Ứng dụng Công nghệ thông tin</div>
+      <div>Học liệu số</div>
+    </div>
+    <div class="right">
+      <div>English</div>
+      <img src="{{ url_for('static', filename='search-icon.png') }}" alt="Search" class="search-icon">
+    </div>
+  </div>
+
+  <!-- Thanh menu logo + các mục chính -->
+  <div class="navbar">
+    <img src="{{ url_for('static', filename='uet-logo.png') }}" alt="UET Logo" class="logo">
+    <div class="menu">
+      <div>Giới thiệu</div>
+      <div>Đào tạo</div>
+      <div>Sinh viên</div>
+      <div>Khoa học – Công nghệ</div>
+      <div>Tuyển sinh</div>
+      <div>Tuyển dụng</div>
+      <div>Khoa – Viện</div>
+      <div>Olympic</div>
+    </div>
+  </div>
+
+  <!-- Banner vàng -->
+  <div class="banner">
+    <div class="left">
+      <img src="{{ url_for('static', filename='hospital-icon.png') }}" alt="Hospital logo">
+      <span>Trường Đại học Công Nghệ - Đại học Quốc gia Hà Nội</span>
+    </div>
+    <div class="right">
+      <img src="{{ url_for('static', filename='phone-icon.png') }}" alt="Phone icon">
+      <span>069669699</span>
+    </div>
+  </div>
+
+  <!-- Nội dung demo -->
+  <div class="container">
+    <h1>UNetBrainSeg</h1>
+    <p>Tải lên hoặc dán ảnh MRI để nhận kết quả phân tích khối u não.</p>
+
+    <!-- Form để gửi ảnh đến Flask -->
+    <form id="uploadForm" action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="fileInput" name="image" accept="image/*"><br>
+        <p>Hoặc nhấn <strong>Ctrl + V</strong> để dán ảnh từ clipboard</p>
+      </div>
+      <button type="submit" class="btn-submit">Phân tích ảnh</button>
+    </form>
+
+    <div class="loading" id="loading">
+      <img src="{{ url_for('static', filename='Loading.gif') }}" alt="Loading...">
+      <p>Đang phân tích ảnh...</p>
+    </div>
+
+    <!-- Hiển thị kết quả -->
+    {% if filename %}
+    <div class="result-container">
+      <div class="image-box">
+        <h3>Ảnh gốc</h3>
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Original Image">
+      </div>
+      <div class="image-box">
+        <h3>Phân đoạn khối u</h3>
+        <img src="{{ url_for('static', filename='uploads/' + overlay_filename) }}" alt="Segmented Image">
+      </div>
+    </div>
+    <div id="output">
+      <h3>Kết quả chẩn đoán:</h3>
+      <p>{{ label }}</p>
+    </div>
+    {% else %}
+    <div id="preview"></div>
+    <div id="output"></div>
+    {% endif %}
+  </div>
+
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const uploadForm = document.getElementById('uploadForm');
+    const loading = document.getElementById('loading');
+
+    // Xử lý paste từ clipboard
+    uploadArea.addEventListener('paste', e => {
+      e.preventDefault();
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const dt = new DataTransfer();
+          dt.items.add(new File([blob], "clipboard-image.png", {
+            type: blob.type
+          }));
+          fileInput.files = dt.files;
+          showImagePreview(blob);
+        }
+      }
+    });
+
+    // Xử lý chọn file từ máy
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) showImagePreview(file);
+    });
+
+    // Hiển thị ảnh preview trước khi submit
+    function showImagePreview(file) {
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        preview.innerHTML = `<img src="${ev.target.result}" alt="MRI Scan">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Hiển thị loading khi submit form
+    uploadForm.addEventListener('submit', function() {
+      loading.style.display = 'block';
+    });
+  </script>
+
+</body>
+</html>
