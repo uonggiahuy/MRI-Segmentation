@@ -1,17 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
+from PIL import Image
 import os
+import uuid
 from pathlib import Path
-from utils import load_models, predict_image
+from segment_classify import load_models, predict_image
 
 app = Flask(__name__)
-# Đảm bảo thư mục uploads tồn tại
 uploads_dir = Path("static/uploads")
-if not os.path.exists(uploads_dir):
-    os.makedirs(uploads_dir)
-
+uploads_dir.mkdir(parents=True, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = uploads_dir
 
-# Load model ngay khi khởi động
+# Tải mô hình
 try:
     segment_model, classify_model = load_models()
     models_loaded = True
@@ -32,27 +31,37 @@ def predict():
     if file.filename == '':
         return redirect(url_for('index'))
 
-    # Lưu file ảnh
-    filename = file.filename
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(file_path)
+    # Tạo tên file duy nhất
+    unique_id = str(uuid.uuid4())[:8]
+    file_ext = os.path.splitext(file.filename)[-1].lower()
+
+    if file_ext in ['.tif', '.tiff']:
+        img = Image.open(file.stream)
+        filename = f"input_{unique_id}.png"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        img.save(file_path, format='PNG')
+    else:
+        filename = f"input_{unique_id}{file_ext}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
 
     if models_loaded:
         try:
-            # Dự đoán bằng mô hình
-            label, overlay_filename = predict_image(file_path, segment_model, classify_model)
+            label, confidence, overlay_path = predict_image(file_path, segment_model, classify_model)
+            overlay_filename = os.path.basename(overlay_path) if overlay_path else None
+            label = f"{label} (Độ tin cậy: {confidence:.2f}%)"
         except Exception as e:
             print(f"Lỗi khi dự đoán: {e}")
             label = "Lỗi xử lý ảnh. Vui lòng thử lại."
             overlay_filename = None
     else:
-        label = "Mô hình chưa được tải. Vui lòng kiểm tra lại cấu hình."
+        label = "Mô hình chưa được tải."
         overlay_filename = None
 
     return render_template('index.html', 
-                          filename=filename, 
-                          overlay_filename=overlay_filename, 
-                          label=label)
+                           filename=filename, 
+                           overlay_filename=overlay_filename, 
+                           label=label)
 
 if __name__ == '__main__':
     app.run(debug=True)

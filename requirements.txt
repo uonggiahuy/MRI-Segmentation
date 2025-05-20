@@ -1,5 +1,6 @@
 Flask
-tensorflow
+tensorflow[and-cuda]
 numpy
 pillow
 matplotlib
+opencv-python
