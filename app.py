@@ -35,8 +35,8 @@ def predict():
     unique_id = str(uuid.uuid4())[:8]
     file_ext = os.path.splitext(file.filename)[-1].lower()
 
-    if file_ext in ['.tif', '.tiff']:
-        img = Image.open(file.stream)
+    if file_ext in ['.tif', '.tiff', '.jpg', '.jpeg']:
+        img = Image.open(file.stream).convert("RGB")
         filename = f"input_{unique_id}.png"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         img.save(file_path, format='PNG')
