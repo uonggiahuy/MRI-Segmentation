@@ -7,7 +7,7 @@ import tensorflow as tf
 import os 
 from skimage import io
 from PIL import Image
-#from tensorflow.keras import backend as K (dành cho phiên bản cũ)
+#from tensorflow.keras import backend as K #(dành cho phiên bản cũ)
   
 #creating a custom datagenerator:
 
@@ -107,7 +107,7 @@ class DataGenerator(tf.keras.utils.Sequence):
 
 
 
-def prediction(test, model, model_seg):
+def prediction(test, classify_model, segment_model):
   '''
   Predcition function which takes dataframe containing ImageID as Input and perform 2 type of prediction on the image
   Initially, image is passed through the classification network which predicts whether the image has defect or not, if the model
@@ -144,7 +144,7 @@ def prediction(test, model, model_seg):
     img = np.reshape(img, (1,256,256,3))
 
     #making prediction on the image
-    is_defect = model.predict(img)
+    is_defect = classify_model.predict(img)
 
     #if tumour is not present we append the details of the image to the list
     if np.argmax(is_defect) == 0:
@@ -171,7 +171,7 @@ def prediction(test, model, model_seg):
     X[0,] = img
 
     #make prediction
-    predict = model_seg.predict(X)
+    predict = segment_model.predict(X)
 
     #if the sum of predicted values is equal to 0 then there is no tumour
     if predict.round().astype(int).sum() == 0:

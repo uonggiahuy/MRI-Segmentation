@@ -192,7 +192,11 @@
       </div>
       <div class="image-box">
         <h3>Phân đoạn khối u</h3>
-        <img src="{{ url_for('static', filename='uploads/' + overlay_filename) }}" alt="Segmented Image">
+        {% if overlay_filename %}
+          <img src="{{ url_for('static', filename='uploads/' + overlay_filename) }}" alt="Segmented Image">
+        {% else %}
+          <p style="color: #ff6666;">Không phát hiện khối u nên không có ảnh phân đoạn.</p>
+        {% endif %}
       </div>
     </div>
     <div id="output">

@@ -14,6 +14,7 @@ app.config['UPLOAD_FOLDER'] = uploads_dir
 try:
     segment_model, classify_model = load_models()
     models_loaded = True
+    print("Mô hình đã được tải thành công!")
 except Exception as e:
     print(f"Lỗi khi tải mô hình: {e}")
     models_loaded = False
@@ -35,31 +36,60 @@ def predict():
     unique_id = str(uuid.uuid4())[:8]
     file_ext = os.path.splitext(file.filename)[-1].lower()
 
+    # Lưu file gốc (để model xử lý)
+    original_filename = f"original_{unique_id}{file_ext}"
+    original_file_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
+    file.save(original_file_path)
+
+    # Tạo file PNG để hiển thị trên web (từ file gốc)
+    display_filename = f"display_{unique_id}.png"
+    display_file_path = os.path.join(app.config['UPLOAD_FOLDER'], display_filename)
+    
     if file_ext in ['.tif', '.tiff', '.jpg', '.jpeg']:
-        img = Image.open(file.stream).convert("RGB")
-        filename = f"input_{unique_id}.png"
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        img.save(file_path, format='PNG')
+        # Chuyển đổi để hiển thị
+        img = Image.open(original_file_path).convert("RGB")
+        img.save(display_file_path, format='PNG')
     else:
-        filename = f"input_{unique_id}{file_ext}"
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+        # File đã là PNG, copy để đồng nhất tên
+        img = Image.open(original_file_path).convert("RGB")
+        img.save(display_file_path, format='PNG')
 
     if models_loaded:
         try:
-            label, confidence, overlay_path = predict_image(file_path, segment_model, classify_model)
+            # Sử dụng FILE GỐC để model xử lý (chất lượng cao hơn)
+            class_result, confidence, overlay_path, tumor_percentage = predict_image(
+                original_file_path,  # ← Đây là điểm quan trọng: dùng file gốc
+                segment_model, 
+                classify_model
+            )
+            
             overlay_filename = os.path.basename(overlay_path) if overlay_path else None
-            label = f"{label} (Độ tin cậy: {confidence:.2f}%)"
+            
+            # Tạo label với thông tin chi tiết hơn
+            if tumor_percentage > 0:
+                label = f"{class_result} (Độ tin cậy: {confidence:.2f}% - Kích thước khối u: {tumor_percentage:.2f}% diện tích ảnh)"
+            else:
+                label = f"{class_result} (Độ tin cậy: {confidence:.2f}%)"
+                
         except Exception as e:
             print(f"Lỗi khi dự đoán: {e}")
+            import traceback
+            traceback.print_exc()
             label = "Lỗi xử lý ảnh. Vui lòng thử lại."
             overlay_filename = None
     else:
         label = "Mô hình chưa được tải."
         overlay_filename = None
 
+    # Xóa file gốc sau khi xử lý xong (tiết kiệm dung lượng)
+    try:
+        os.remove(original_file_path)
+        print(f"Đã xóa file gốc: {original_file_path}")
+    except:
+        pass
+
     return render_template('index.html', 
-                           filename=filename, 
+                           filename=display_filename,  # Hiển thị file PNG
                            overlay_filename=overlay_filename, 
                            label=label)
 

@@ -11,6 +11,7 @@ from utilities import focal_tversky, tversky
 
 # Tải mô hình phân loại (ResNet50)
 print("Đang tải mô hình phân loại...")
+'''
 try:
     with open('/home/choconadyne/Documents/MRI_segmentation_khnt/model/Classify(new)/resnet-50-MRI.json', 'r') as json_file:
         json_savedModel = json_file.read()
@@ -20,6 +21,11 @@ try:
     print("Đã tải mô hình phân loại thành công!")
 except Exception as e:
     print(f"Lỗi khi tải mô hình phân loại: {e}")
+    '''
+#file phân loại mới
+model = tf.keras.models.load_model('/home/choconadyne/Documents/MRI_segmentation_khnt/model/classify218/classifier-resnet-weights.keras', compile = False)
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
+print("Đã tải mô hình phân loại thành công!")
 
 # Tải mô hình phân đoạn (ResUNet)
 print("Đang tải mô hình phân đoạn...")
